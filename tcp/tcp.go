@@ -72,7 +72,12 @@ func (s *Server) trackConnections() {
 
 // handleRequest processes an incoming client connection.
 func (s *Server) handleRequest(conn net.Conn) {
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			log.Printf("Error closing connection: %v", err)
+		}
+	}(conn)
 
 	// Read the incoming data
 	buf := make([]byte, bufferSize)
@@ -119,7 +124,12 @@ func sendData(wg *sync.WaitGroup) {
 			time.Sleep(clientRetryDelay)
 		}
 	}
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			log.Printf("Error closing connection: %v", err)
+		}
+	}(conn)
 
 	// Send a message to the server
 	_, err = conn.Write([]byte(clientMessage))
